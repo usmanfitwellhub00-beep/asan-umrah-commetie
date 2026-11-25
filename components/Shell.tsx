@@ -76,6 +76,7 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
   const [q, setQ] = useState("");
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [pwOpen, setPwOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const dashboard: NavItem = { href: "/dashboard", label: "Dashboard", short: "Home", icon: "dashboard", show: true };
   const groups: Group[] = [
@@ -172,7 +173,7 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
         </nav>
 
         <div className="shrink-0 p-4 space-y-3" style={{ borderTop: "1px solid var(--border)" }}>
-          <div className="rounded-xl p-3" style={{ background: "var(--primary-soft)" }}>
+          <div role="link" tabIndex={0} title="Open my profile" onClick={() => router.push("/profile")} onKeyDown={(e) => { if (e.key === "Enter") router.push("/profile"); }} className="rounded-xl p-3 cursor-pointer transition hover:brightness-95 hover:shadow-sm" style={{ background: "var(--primary-soft)", outline: pathname === "/profile" ? "2px solid var(--primary)" : "none" }}>
             <div className="text-[11px]" style={{ color: "var(--side-muted)" }}>Signed in as</div>
             <div className="flex items-center gap-3 mt-1.5">
               <Initials name={user.name} size={40} url={user.pictureUrl} gender={user.gender} />
@@ -180,7 +181,7 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
                 <div className="font-bold truncate">{user.name}</div>
                 <div className="flex items-center gap-1.5 text-[12px] mt-0.5" style={{ color: "var(--side-muted)" }}>
                   <span className="truncate">ID: <b className="font-mono" style={{ color: "var(--side-text)" }}>{user.userId}</b></span>
-                  <button type="button" onClick={copyId} aria-label="Copy ID" title="Copy ID" className="shrink-0 hover:opacity-70"><Icon name="copy" size={13} /></button>
+                  <button type="button" onClick={(e) => { e.stopPropagation(); copyId(); }} aria-label="Copy ID" title="Copy ID" className="shrink-0 hover:opacity-70"><Icon name="copy" size={13} /></button>
                 </div>
               </div>
             </div>
@@ -226,13 +227,32 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
             <button className="btn btn-danger" onClick={logout} title="Logout">
               <Icon name="logout" size={16} /> <span className="hidden sm:inline">Logout</span>
             </button>
-            <Link href="/profile" title="My Profile" className="flex items-center gap-2.5 rounded-full py-1 ps-1 pe-1 md:pe-3.5 ms-1" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
-              <Initials name={user.name} size={34} url={user.pictureUrl} gender={user.gender} />
-              <div className="hidden md:block leading-tight max-w-44">
-                <div className="text-sm font-semibold truncate">{user.name}</div>
-                <div className="text-[11px]" style={{ color: "var(--muted)" }}>{roleLabel}</div>
-              </div>
-            </Link>
+            <div className="relative ms-1">
+              <button type="button" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)} title="Account menu" className="flex items-center gap-2.5 rounded-full py-1 ps-1 pe-2 md:pe-3 cursor-pointer transition hover:shadow-sm" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
+                <Initials name={user.name} size={34} url={user.pictureUrl} gender={user.gender} />
+                <div className="hidden md:block leading-tight max-w-44 text-start">
+                  <div className="text-sm font-semibold truncate">{user.name}</div>
+                  <div className="text-[11px]" style={{ color: "var(--muted)" }}>{roleLabel}</div>
+                </div>
+                <span className="transition-transform" style={{ transform: menuOpen ? "rotate(180deg)" : "none", color: "var(--muted)" }}><Icon name="chevron" size={16} /></span>
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                  <div role="menu" className="absolute end-0 top-full mt-2 z-50 w-56 rounded-xl p-1.5 shadow-xl" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+                    <Link href="/profile" role="menuitem" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-[var(--primary-soft)]">
+                      <Icon name="users" size={16} /> My Profile
+                    </Link>
+                    <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); setPwOpen(true); }} className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-[var(--primary-soft)] text-start">
+                      <Icon name="key" size={16} /> Change Password
+                    </button>
+                    <button type="button" role="menuitem" onClick={logout} className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-start hover:bg-[var(--primary-soft)]" style={{ color: "var(--danger, #dc2626)" }}>
+                      <Icon name="logout" size={16} /> Logout
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </header>
 
