@@ -112,8 +112,12 @@ export async function ensureAdmin() {
   const password = process.env.ADMIN_PASSWORD;
   if (!email || !password) return;
   await connectDB();
-  const exists = await User.exists({ role: "admin" });
-  if (exists) {
+  const existing: any = await User.findOne({ role: "admin" }).select("email").lean();
+  if (existing) {
+    // keep the admin login email in sync with ADMIN_EMAIL (password is never touched)
+    if (existing.email !== email && !(await User.exists({ email }))) {
+      await User.updateOne({ _id: existing._id }, { $set: { email } });
+    }
     adminChecked = true;
     return;
   }
