@@ -91,6 +91,9 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
       { href: "/hierarchy", label: "Hierarchy", short: "Hierarchy", icon: "users", show: isAdmin || user.role === "SM" },
     ] },
     { key: "finance", label: "Finance", icon: "wallet", items: [{ href: "/commission", label: isAdmin ? "Commission Management" : "Commission", short: "Commission", icon: "percent", show: isAdmin || can(user, "viewCommission") }] },
+    { key: "account", label: "Account", icon: "users", items: [
+      { href: "/profile", label: "My Profile", short: "Profile", icon: "users", show: true },
+    ] },
     { key: "admin", label: "Admin", icon: "shield", items: [
       { href: "/rights", label: "Rights Management", short: "Rights", icon: "shield", show: isAdmin },
     ] },
@@ -223,13 +226,13 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
             <button className="btn btn-danger" onClick={logout} title="Logout">
               <Icon name="logout" size={16} /> <span className="hidden sm:inline">Logout</span>
             </button>
-            <div className="hidden md:flex items-center gap-2.5 rounded-full py-1 ps-1 pe-3.5 ms-1" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
+            <Link href="/profile" title="My Profile" className="flex items-center gap-2.5 rounded-full py-1 ps-1 pe-1 md:pe-3.5 ms-1" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
               <Initials name={user.name} size={34} url={user.pictureUrl} gender={user.gender} />
-              <div className="leading-tight max-w-44">
+              <div className="hidden md:block leading-tight max-w-44">
                 <div className="text-sm font-semibold truncate">{user.name}</div>
                 <div className="text-[11px]" style={{ color: "var(--muted)" }}>{roleLabel}</div>
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 
@@ -238,8 +241,8 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
 
       {/* ================= Mobile bottom navigation ================= */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 px-2 pt-2" style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }} aria-label="Main">
-        <div className="glass glass-strong grid" style={{ gridTemplateColumns: `repeat(${flat.length}, minmax(0, 1fr))` }}>
-          {flat.map((i) => (
+        <div className="glass glass-strong grid" style={{ gridTemplateColumns: `repeat(${flat.filter((i) => i.href !== "/profile").length}, minmax(0, 1fr))` }}>
+          {flat.filter((i) => i.href !== "/profile").map((i) => (
             <Link key={i.href} href={i.href} className={`tab-item ${pathname === i.href ? "active" : ""}`}>
               <Icon name={i.icon} size={20} />
               <span className="truncate max-w-full">{i.short}</span>

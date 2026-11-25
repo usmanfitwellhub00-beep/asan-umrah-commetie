@@ -2,6 +2,14 @@ export type Lang = "en" | "ur";
 
 /** English text -> Urdu. Missing keys fall back to English. */
 export const UR: Record<string, string> = {
+  "My Profile": "میری پروفائل",
+  "Account": "اکاؤنٹ",
+  "Your account details.": "آپ کے اکاؤنٹ کی تفصیلات۔",
+  "Change picture": "تصویر تبدیل کریں",
+  "Upload picture": "تصویر اپلوڈ کریں",
+  "Profile picture updated": "پروفائل تصویر اپ ڈیٹ ہو گئی",
+  "Joined": "شمولیت",
+
   // ---- chrome / navigation
   "Asaan Umra Committee": "آسان عمرہ کمیٹی",
   "Asaan Umra Committee management portal": "آسان عمرہ کمیٹی مینجمنٹ پورٹل",
