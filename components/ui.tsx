@@ -144,9 +144,7 @@ export function PortalLoader({ text = "Loading portal…" }: { text?: string }) 
     <div className="min-h-screen flex flex-col items-center justify-center gap-5" role="status" aria-live="polite">
       <div className="relative flex items-center justify-center" style={{ width: 84, height: 84 }}>
         <div className="spinner-lg absolute" />
-        <div className="rounded-2xl flex items-center justify-center text-white pulse-soft" style={{ width: 44, height: 44, background: "var(--primary)" }}>
-          <Icon name="kaaba" size={24} />
-        </div>
+        <img src="/logo.png" alt="Asaan Umra Committee" width={46} height={46} className="rounded-2xl pulse-soft" style={{ width: 46, height: 46 }} />
       </div>
       <div className="text-sm font-semibold" style={{ color: "var(--muted)" }}>{text}</div>
     </div>

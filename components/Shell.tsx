@@ -117,9 +117,7 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
       {/* ================= Sidebar ================= */}
       <aside className="hidden lg:flex fixed inset-y-0 start-0 z-40 w-72 flex-col" style={{ background: "var(--side-bg)", borderInlineEnd: "1px solid var(--border)" }}>
         <div className="flex h-[72px] shrink-0 items-center gap-3 px-5" style={{ borderBottom: "1px solid var(--border)" }}>
-          <div className="rounded-xl flex items-center justify-center text-white shrink-0" style={{ width: 42, height: 42, background: "var(--primary)", boxShadow: "0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent)" }}>
-            <Icon name="kaaba" size={22} />
-          </div>
+          <img src="/logo.png" alt="Asaan Umra Committee" width={44} height={44} className="rounded-xl shrink-0" style={{ width: 44, height: 44 }} />
           <div className="leading-tight min-w-0">
             <div className="font-bold text-[17px] truncate">Asaan Umra Committee</div>
             <div className="text-[12px]" style={{ color: "var(--side-muted)" }}>{roleLabel}</div>
@@ -189,9 +187,7 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
       <div className="lg:ps-72 flex flex-col min-h-screen min-w-0">
         <header className="sticky top-0 z-30 h-14 sm:h-[72px] flex items-center gap-3 px-4 sm:px-6 lg:px-8 backdrop-blur-md" style={{ background: "var(--surface-strong)", borderBottom: "1px solid var(--border)" }}>
           {/* mobile: logo + page title */}
-          <div className="lg:hidden rounded-lg flex items-center justify-center text-white shrink-0" style={{ width: 32, height: 32, background: "var(--primary)" }}>
-            <Icon name="kaaba" size={18} />
-          </div>
+          <img src="/logo.png" alt="Asaan Umra Committee" width={34} height={34} className="lg:hidden rounded-lg shrink-0" style={{ width: 34, height: 34 }} />
           <div className="lg:hidden font-semibold truncate">{current?.label ?? "Portal"}</div>
 
           {/* desktop: Reports to */}

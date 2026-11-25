@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Icon } from "@/components/icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LangToggle } from "@/components/LangContext";
 import { Spinner } from "@/components/ui";
@@ -48,8 +47,8 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="inline-flex rounded-2xl p-3.5 text-white mb-4" style={{ background: "var(--primary)" }}>
-            <Icon name="kaaba" size={26} />
+          <div className="inline-flex mb-3">
+            <img src="/logo.png" alt="Asaan Umra Committee" width={96} height={96} className="rounded-3xl shadow-lg" style={{ width: 96, height: 96 }} />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Asaan Umra Committee</h1>
           <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>Sign in to your portal</p>
