@@ -10,6 +10,7 @@ import { Icon, type IconName } from "./icons";
 import { ThemeToggle } from "./ThemeToggle";
 import { LangToggle } from "./LangContext";
 import { Field, Modal, ToastProvider, useToast } from "./ui";
+import { Avatar } from "./Avatar";
 import { UserProvider } from "./UserContext";
 
 type NavItem = { href: string; label: string; short: string; icon: IconName; show: boolean };
@@ -17,7 +18,9 @@ type Group = { key: string; label: string; icon: IconName; items: NavItem[] };
 
 const initials = (name: string) => name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("") || "U";
 
-function Initials({ name, size = 36 }: { name: string; size?: number }) {
+function Initials({ name, size = 36, url, gender }: { name: string; size?: number; url?: string | null; gender?: string | null }) {
+  if (url) return <Avatar url={url} name={name} size={size} />;
+  if (gender === "male" || gender === "female") return <Avatar gender={gender} name={name} size={size} />;
   return (
     <div className="rounded-full flex items-center justify-center font-bold text-white shrink-0" style={{ width: size, height: size, fontSize: size * 0.36, background: "var(--primary)" }}>
       {initials(name)}
@@ -169,7 +172,7 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
           <div className="rounded-xl p-3" style={{ background: "var(--primary-soft)" }}>
             <div className="text-[11px]" style={{ color: "var(--side-muted)" }}>Signed in as</div>
             <div className="flex items-center gap-3 mt-1.5">
-              <Initials name={user.name} size={40} />
+              <Initials name={user.name} size={40} url={user.pictureUrl} gender={user.gender} />
               <div className="min-w-0 flex-1 leading-tight">
                 <div className="font-bold truncate">{user.name}</div>
                 <div className="flex items-center gap-1.5 text-[12px] mt-0.5" style={{ color: "var(--side-muted)" }}>
@@ -198,7 +201,7 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
                   Reports to <span className="badge badge-info">{user.reportsTo.role === "admin" ? "ADMIN" : user.reportsTo.role}</span>
                 </div>
                 <div className="flex items-center gap-2 mt-1 min-w-0">
-                  <Initials name={user.reportsTo.name} size={26} />
+                  <Initials name={user.reportsTo.name} size={26} url={user.reportsTo.pictureUrl} gender={user.reportsTo.gender} />
                   <span className="font-semibold truncate">{user.reportsTo.name} <span className="font-mono text-xs font-normal" style={{ color: "var(--muted)" }}>{user.reportsTo.userId}</span></span>
                 </div>
               </>
@@ -221,7 +224,7 @@ function ShellInner({ user, children }: { user: SessionUser; children: React.Rea
               <Icon name="logout" size={16} /> <span className="hidden sm:inline">Logout</span>
             </button>
             <div className="hidden md:flex items-center gap-2.5 rounded-full py-1 ps-1 pe-3.5 ms-1" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
-              <Initials name={user.name} size={34} />
+              <Initials name={user.name} size={34} url={user.pictureUrl} gender={user.gender} />
               <div className="leading-tight max-w-44">
                 <div className="text-sm font-semibold truncate">{user.name}</div>
                 <div className="text-[11px]" style={{ color: "var(--muted)" }}>{roleLabel}</div>

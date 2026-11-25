@@ -68,7 +68,9 @@ export type SessionUser = {
   sm: string | null;
   rights: Record<string, boolean>;
   leadAmount: number;
-  reportsTo: { userId: string; name: string; role: Role } | null;
+  pictureUrl: string;
+  gender: string;
+  reportsTo: { userId: string; name: string; role: Role; pictureUrl: string; gender: string } | null;
 };
 
 export async function getSessionUser(): Promise<SessionUser | null> {
@@ -82,11 +84,11 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const settings = await getSettings();
   let reportsTo: SessionUser["reportsTo"] = null;
   if (u.role === "SE" && u.sm) {
-    const p: any = await User.findById(u.sm).select("userId name role").lean();
-    if (p) reportsTo = { userId: p.userId, name: p.name, role: p.role };
+    const p: any = await User.findById(u.sm).select("userId name role pictureUrl gender").lean();
+    if (p) reportsTo = { userId: p.userId, name: p.name, role: p.role, pictureUrl: p.pictureUrl ?? "", gender: p.gender ?? "" };
   } else if (u.role === "SM") {
-    const a: any = await User.findOne({ role: "admin" }).select("userId name role").lean();
-    if (a) reportsTo = { userId: a.userId, name: a.name, role: a.role };
+    const a: any = await User.findOne({ role: "admin" }).select("userId name role pictureUrl gender").lean();
+    if (a) reportsTo = { userId: a.userId, name: a.name, role: a.role, pictureUrl: a.pictureUrl ?? "", gender: a.gender ?? "" };
   }
   return {
     _id: String(u._id),
@@ -100,6 +102,8 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     sm: u.sm ? String(u.sm) : null,
     rights: u.role === "admin" ? {} : settings.rights[u.role as "SM" | "SE"],
     leadAmount: settings.leadAmount,
+    pictureUrl: u.pictureUrl ?? "",
+    gender: u.gender ?? "",
     reportsTo,
   };
 }
