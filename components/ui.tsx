@@ -134,6 +134,25 @@ export function Empty({ title, text }: { title: string; text?: string }) {
   );
 }
 
+export function Spinner({ className = "" }: { className?: string }) {
+  return <span className={`spinner ${className}`} aria-hidden="true" />;
+}
+
+/** Full-screen branded loader (rotating ring around the logo). */
+export function PortalLoader({ text = "Loading portal…" }: { text?: string }) {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-5" role="status" aria-live="polite">
+      <div className="relative flex items-center justify-center" style={{ width: 84, height: 84 }}>
+        <div className="spinner-lg absolute" />
+        <div className="rounded-2xl flex items-center justify-center text-white pulse-soft" style={{ width: 44, height: 44, background: "var(--primary)" }}>
+          <Icon name="kaaba" size={24} />
+        </div>
+      </div>
+      <div className="text-sm font-semibold" style={{ color: "var(--muted)" }}>{text}</div>
+    </div>
+  );
+}
+
 export function Loading({ rows = 4 }: { rows?: number }) {
   return (
     <div className="space-y-3">

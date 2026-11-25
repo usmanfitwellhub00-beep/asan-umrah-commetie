@@ -29,7 +29,7 @@ function Person({ n, size, role }: { n: N; size: number; role: string }) {
         <div className="font-semibold truncate">{n.name}</div>
         <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
           <span className="badge badge-info">{role}</span>
-          <span className="font-mono text-[11px]" dir="ltr" style={{ color: "var(--muted)" }}>{n.userId}</span>
+          <span className="font-mono text-[11px] whitespace-nowrap" dir="ltr" style={{ color: "var(--muted)" }}>{n.userId}</span>
           {!n.active && <span className="badge badge-bad">Inactive</span>}
         </div>
       </div>
@@ -42,33 +42,38 @@ function SeRow({ e, open, onToggle, showLeads, onOpenLead }: { e: SE; open: bool
   const pending = e.leads.filter((l) => l.paymentStatus === "pending").length;
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: "var(--primary-soft)" }}>
-      <button type="button" className="w-full flex items-center gap-2 px-3 py-2.5 text-start" onClick={onToggle} disabled={!showLeads} aria-expanded={open}>
-        {showLeads && <span className={`transition-transform shrink-0 ${open ? "" : "-rotate-90 rtl:rotate-90"}`} style={{ color: "var(--muted)" }}><Icon name="chevron" size={16} /></span>}
-        <div className="min-w-0 flex-1"><Person n={e} size={36} role="SE" /></div>
-        {showLeads && (
-          <div className="flex flex-wrap justify-end gap-1.5 shrink-0">
-            <span className="badge badge-info">{e.leads.length} leads</span>
-            {approved > 0 && <span className="badge badge-ok">{approved} approved</span>}
-            {pending > 0 && <span className="badge badge-warn">{pending} pending</span>}
-          </div>
-        )}
+      <button type="button" className="w-full flex items-start gap-2 px-3 py-2.5 text-start" onClick={onToggle} disabled={!showLeads} aria-expanded={open}>
+        {showLeads && <span className={`mt-2.5 transition-transform shrink-0 ${open ? "" : "-rotate-90 rtl:rotate-90"}`} style={{ color: "var(--muted)" }}><Icon name="chevron" size={16} /></span>}
+        <div className="min-w-0 flex-1 space-y-2">
+          <Person n={e} size={36} role="SE" />
+          {showLeads && (
+            <div className="flex flex-wrap gap-1.5">
+              <span className="badge badge-info">{e.leads.length} leads</span>
+              {approved > 0 && <span className="badge badge-ok">{approved} approved</span>}
+              {pending > 0 && <span className="badge badge-warn">{pending} pending</span>}
+            </div>
+          )}
+        </div>
       </button>
       {showLeads && open && (
         <div className="px-3 pb-3">
           {e.leads.length === 0 ? (
             <div className="text-xs px-2 py-2" style={{ color: "var(--muted)" }}>No entries yet</div>
           ) : (
-            <ul className="nav-sub !ms-5 !mt-0 !mb-0 gap-1.5">
+            <ul className="nav-sub !ms-3 !mt-0 !mb-0 gap-1.5">
               {e.leads.map((l) => (
                 <li key={l._id}>
-                  <button type="button" onClick={() => onOpenLead(l._id)} className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-start flex-wrap sm:flex-nowrap" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-                    <Icon name="leads" size={15} />
+                  <button type="button" onClick={() => onOpenLead(l._id)} className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-start" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+                    <span className="shrink-0" style={{ color: "var(--muted)" }}><Icon name="leads" size={15} /></span>
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-semibold truncate">{l.name}</div>
-                      <div className="text-[11px] font-mono" style={{ color: "var(--muted)" }}>{l.leadId} · {dateFmt(l.createdAt)}</div>
+                      <div className="text-sm font-semibold break-words leading-snug">{l.name}</div>
+                      <div className="text-[11px] font-mono leading-snug" style={{ color: "var(--muted)" }}>{l.leadId}</div>
+                      <div className="text-[11px]" style={{ color: "var(--muted)" }}>{dateFmt(l.createdAt)}</div>
                     </div>
-                    <span className="text-xs font-semibold tnum">Rs {money(l.amount)}</span>
-                    <StatusBadge status={l.paymentStatus} />
+                    <div className="shrink-0 flex flex-col items-end gap-1">
+                      <span className="text-xs font-semibold tnum whitespace-nowrap">Rs {money(l.amount)}</span>
+                      <StatusBadge status={l.paymentStatus} />
+                    </div>
                   </button>
                 </li>
               ))}
@@ -126,14 +131,14 @@ function Hierarchy() {
           {d.sms.length === 0 ? (
             <Empty title="No Sales Managers yet" text="Add a Sales Manager from Persons Management." />
           ) : (
-            <div className={isSM ? "w-full" : "w-full grid gap-4 md:grid-cols-2 xl:grid-cols-3 items-start"}>
+            <div className={isSM ? "w-full" : "w-full grid gap-4 grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(380px,1fr))] items-start"}>
               {d.sms.map((m) => (
                 <div key={m._id} className="glass p-4" style={isSM ? { borderTop: "3px solid var(--primary)" } : undefined}>
                   <div className="flex items-start justify-between gap-2">
                     <Person n={m} size={isSM ? 52 : 48} role="SM" />
                     <span className="badge badge-ok shrink-0">{m.ses.length} SE</span>
                   </div>
-                  <div className="nav-sub !ms-6 !mt-3 !mb-0 gap-2.5">
+                  <div className="nav-sub !ms-3 !mt-3 !mb-0 gap-2.5">
                     {m.ses.length === 0 ? (
                       <div className="text-xs py-1" style={{ color: "var(--muted)" }}>No Sales Executives yet</div>
                     ) : m.ses.map((e) => (

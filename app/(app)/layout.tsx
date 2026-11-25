@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
 import { Shell } from "@/components/Shell";
+import { PortalLoader } from "@/components/ui";
 
 async function AuthGate({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
@@ -10,11 +11,7 @@ async function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 function Loader() {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="glass px-6 py-4 text-sm" style={{ color: "var(--muted)" }}>Loading portal…</div>
-    </div>
-  );
+  return <PortalLoader />;
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

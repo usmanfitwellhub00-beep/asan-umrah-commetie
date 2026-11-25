@@ -1,24 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LangToggle } from "@/components/LangContext";
+import { Spinner } from "@/components/ui";
 import { api } from "@/lib/client";
 
 export default function LoginPage() {
-  const router = useRouter();
   const pathname = usePathname();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    router.prefetch("/dashboard");
-  }, [router]);
 
   // page can be re-shown from the router cache with old state: always start clean
   useEffect(() => {
@@ -35,7 +31,8 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await api("/api/auth/login", { method: "POST", json: { identifier, password } });
-      router.replace("/dashboard");
+      // full page load: guarantees the new session cookie is sent and no cached "redirect to /login" is reused
+      window.location.assign("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
       setBusy(false);
@@ -80,7 +77,7 @@ export default function LoginPage() {
           )}
 
           <button className="btn btn-primary w-full py-3" disabled={busy}>
-            {busy ? "Signing in…" : "Sign in"}
+            {busy ? <><Spinner /> Signing in…</> : "Sign in"}
           </button>
         </form>
 
