@@ -104,6 +104,9 @@ export const UR: Record<string, string> = {
   "Not a valid Gmail address (6–30 letters, numbers or dots)": "جی میل ایڈریس درست نہیں (6 سے 30 حروف، اعداد یا ڈاٹ)",
   "Please enter a valid email address": "براہِ کرم درست ای میل ایڈریس لکھیں",
   "Please enter valid 11-digit mobile numbers": "براہِ کرم 11 ہندسوں کے درست موبائل نمبر لکھیں",
+  "Danger zone — delete all data": "خطرناک حصہ — تمام ڈیٹا حذف کریں",
+  "Delete all data": "تمام ڈیٹا حذف کریں",
+  "Deleting…": "حذف ہو رہا ہے…",
   // ---- common
   "Cancel": "منسوخ",
   "Close": "بند کریں",

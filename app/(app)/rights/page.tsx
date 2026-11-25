@@ -37,6 +37,8 @@ function Rights() {
   const [maxSM, setMaxSM] = useState("5");
   const [amount, setAmount] = useState("5000");
   const [busy, setBusy] = useState(false);
+  const [wipeText, setWipeText] = useState("");
+  const [wiping, setWiping] = useState(false);
 
   useEffect(() => {
     api("/api/rights")
@@ -52,6 +54,19 @@ function Rights() {
 
   function set(role: "SM" | "SE", key: string, v: boolean) {
     setRights((r) => (r ? { ...r, [role]: { ...r[role], [key]: v } } : r));
+  }
+
+  async function wipe() {
+    setWiping(true);
+    try {
+      const r = await api("/api/admin/reset", { method: "POST", json: { confirm: wipeText } });
+      toast.err(`All data deleted: ${r.users} accounts, ${r.leads} leads`);
+      setWipeText("");
+    } catch (e) {
+      toast.err(e instanceof Error ? e.message : "Delete failed");
+    } finally {
+      setWiping(false);
+    }
   }
 
   async function save() {
@@ -116,6 +131,17 @@ function Rights() {
               </div>
             </div>
           ))}
+
+          <div className="glass p-4 xl:col-span-2" style={{ borderColor: "color-mix(in srgb, var(--bad) 40%, transparent)" }}>
+            <div className="font-bold mb-1" style={{ color: "var(--bad)" }}>Danger zone — delete all data</div>
+            <p className="text-[13px] mb-3" style={{ color: "var(--muted)" }}>
+              Deletes every Sales Manager, Sales Executive and lead (with their uploaded images) and restarts IDs from SM-0001 / LD-000001. Your admin account and the rights settings are kept. This cannot be undone.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input className="input" placeholder='Type DELETE ALL to confirm' value={wipeText} onChange={(e) => setWipeText(e.target.value)} />
+              <button className="btn btn-danger btn-lg shrink-0" disabled={wipeText !== "DELETE ALL" || wiping} onClick={wipe}><Icon name="trash" size={16} /> {wiping ? "Deleting…" : "Delete all data"}</button>
+            </div>
+          </div>
 
           <div className="flex justify-end xl:col-span-2">
             <button className="btn btn-primary btn-lg" onClick={save} disabled={busy}><Icon name="check" size={16} /> {busy ? "Saving…" : "Save rights"}</button>
