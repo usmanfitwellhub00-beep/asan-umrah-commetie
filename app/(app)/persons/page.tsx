@@ -5,7 +5,7 @@ import { Icon } from "@/components/icons";
 import { ConfirmDialog, Empty, Field, Loading, Modal, PageInfo, RoleBadge, RoleGate, Stat, useToast } from "@/components/ui";
 import { useUser } from "@/components/UserContext";
 import { ProfileFields, emptyProfile, missingProfile, type Profile } from "@/components/ProfileFields";
-import { emailError, isEmailValid, phoneError } from "@/lib/validate-shared";
+import { cleanReferral, emailError, isEmailValid, phoneError, referralError } from "@/lib/validate-shared";
 import { useLive } from "@/lib/live";
 import { api } from "@/lib/client";
 import { can } from "@/lib/rights";
@@ -114,7 +114,7 @@ function Persons() {
         structure={[
           isAdmin ? `Summary cards — Sales Managers used (${meta.smCount} of max ${meta.maxSM}) and total Sales Executives.` : "Summary cards — your Sales Executives and their entries.",
           isAdmin ? "Tabs — switch between Sales Managers and Sales Executives. Each SE is always under one SM." : "Table — your Sales Executives with their IDs, entries and status.",
-          "IDs are generated automatically: SM → SM-0000, SE → SE-(SM code)-(6 digit SE number), e.g. SE-0001-000001.",
+          "SM IDs are generated automatically (SM-0000). Each SE gets a custom Referral Code (e.g. UMDCA4BD-3) which is also their login ID.",
           isAdmin ? "Admin can add, edit, activate/deactivate and delete accounts." : canEditSE ? "You may edit your SEs (enabled by the admin)." : "After adding an SE you cannot edit them — only the admin can.",
           "Creating an account also creates the login (email or ID + the password you set).",
         ]}
@@ -301,6 +301,7 @@ function CreateModal({ role, sms, isAdmin, onClose, onCreated }: {
   const [prof, setProf] = useState<Profile>(emptyProfile());
   const [password, setPassword] = useState("");
   const [smId, setSmId] = useState(sms[0]?._id ?? "");
+  const [referral, setReferral] = useState("");
   const [busy, setBusy] = useState(false);
   const strict = role === "SM";
   const missing: string[] = [];
@@ -308,13 +309,14 @@ function CreateModal({ role, sms, isAdmin, onClose, onCreated }: {
   if (!isEmailValid(email)) missing.push("valid Email");
   if (password.length < 8) missing.push("Password (8+ characters)");
   if (strict) missing.push(...missingProfile(prof));
+  if (role === "SE" && (!referral || referralError(referral))) missing.push("Referral Code");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (missing.length) return toast.warn(`Please provide: ${missing.join(", ")}`);
     setBusy(true);
     try {
-      const d = await api("/api/users", { method: "POST", json: { role, name, email, password, smId, ...prof } });
+      const d = await api("/api/users", { method: "POST", json: { role, name, email, password, smId, referralCode: referral, ...prof } });
       toast.ok(`${role} created: ${d.user.userId}`);
       onCreated({ name, userId: d.user.userId, email, password, cnic: prof.cnic, phone: prof.phone, whatsapp: prof.whatsappSameAsPhone ? prof.phone : prof.whatsapp });
     } catch (err) {
@@ -335,6 +337,7 @@ function CreateModal({ role, sms, isAdmin, onClose, onCreated }: {
           </Field>
         )}
           <Field label="Full name" required><input className="input" value={name} onChange={(e) => setName(e.target.value)} /></Field>
+          {role === "SE" && <Field label="Referral Code" required hint="Used as this SE's ID and login, e.g. UMDCA4BD-3" error={referralError(referral)}><input className="input font-mono" value={referral} onChange={(e) => setReferral(cleanReferral(e.target.value))} maxLength={20} /></Field>}
           <Field label="Email (login)" required error={emailError(email)}><input className="input" type="email" autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value.replace(/\s/g, ""))} /></Field>
         <ProfileFields value={prof} onChange={(patch) => setProf((p) => ({ ...p, ...patch }))} required={strict} />
         <div className="sm:col-span-2"><Field label="Password" required hint="At least 8 characters. Sign in with email, ID or number.">
@@ -360,10 +363,13 @@ function EditModal({ person, isAdmin, onClose, onSaved }: { person: Person; isAd
   const [prof, setProf] = useState<Profile>(emptyProfile({ ...person, fatherName: person.fatherName }));
   const [password, setPassword] = useState("");
   const [active, setActive] = useState<boolean>(person.active);
+  const [referral, setReferral] = useState(person.userId);
   const [busy, setBusy] = useState(false);
+  const editRef = isAdmin && person.role === "SE";
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (editRef && (!referral || referralError(referral))) return toast.warn("Please enter a valid Referral Code");
     if (isAdmin && !isEmailValid(email)) return toast.warn("Please enter a valid email address");
     if ((prof.phone && phoneError(prof.phone)) || (!prof.whatsappSameAsPhone && prof.whatsapp && phoneError(prof.whatsapp))) return toast.warn("Please enter valid 11-digit mobile numbers");
     setBusy(true);
@@ -371,6 +377,7 @@ function EditModal({ person, isAdmin, onClose, onSaved }: { person: Person; isAd
       const json: Record<string, any> = { name, active, ...prof };
       if (isAdmin) {
         json.email = email;
+        if (editRef) json.referralCode = referral;
         if (password) json.password = password;
       }
       await api(`/api/users/${person._id}`, { method: "PATCH", json });
@@ -385,9 +392,10 @@ function EditModal({ person, isAdmin, onClose, onSaved }: { person: Person; isAd
   return (
     <Modal open xl onClose={onClose} title={`Edit ${person.userId}`}>
       <form onSubmit={submit} className="space-y-4">
-        <div className="flex items-center gap-2"><RoleBadge role={person.role} /><span className="text-xs" style={{ color: "var(--muted)" }}>ID cannot be changed</span></div>
+        <div className="flex items-center gap-2"><RoleBadge role={person.role} /><span className="text-xs" style={{ color: "var(--muted)" }}>{editRef ? "Changing the Referral Code also changes the login ID" : "ID cannot be changed"}</span></div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
         <Field label="Full name" required><input className="input" value={name} onChange={(e) => setName(e.target.value)} required /></Field>
+        {editRef && <Field label="Referral Code" required error={referralError(referral)}><input className="input font-mono" value={referral} onChange={(e) => setReferral(cleanReferral(e.target.value))} maxLength={20} required /></Field>}
         {isAdmin && <Field label="Email (login)" required error={emailError(email)}><input className="input" type="email" autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value.replace(/\s/g, ""))} required /></Field>}
         <ProfileFields value={prof} onChange={(patch) => setProf((p) => ({ ...p, ...patch }))} required={person.role === "SM"} />
         {isAdmin && (

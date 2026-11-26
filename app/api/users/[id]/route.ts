@@ -7,6 +7,7 @@ import { hashPassword } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { isEmail } from "@/lib/validators";
 import { parseProfile } from "@/lib/profile";
+import { cleanReferral, referralError } from "@/lib/validate-shared";
 
 export const PATCH = handle(async (req, ctx) => {
   const me = await requireUser(["admin", "SM"]);
@@ -31,6 +32,17 @@ export const PATCH = handle(async (req, ctx) => {
   if (body.active !== undefined) {
     if (target.role === "admin" && body.active === false) throw new ApiError(400, "The admin account cannot be deactivated");
     target.active = !!body.active;
+  }
+  if (me.role === "admin" && target.role === "SE" && body.referralCode !== undefined) {
+    const code = cleanReferral(String(body.referralCode));
+    if (!code) throw new ApiError(400, "Referral code is required");
+    const err = referralError(code);
+    if (err) throw new ApiError(400, err);
+    if (code !== target.userId) {
+      if (await User.exists({ userId: code, _id: { $ne: target._id } })) throw new ApiError(409, "This referral code is already used");
+      target.userId = code;
+      await Lead.updateMany({ se: target._id }, { $set: { seId: code } });
+    }
   }
   if (me.role === "admin") {
     if (body.email !== undefined) {

@@ -8,6 +8,7 @@ import { hashPassword } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { isEmail } from "@/lib/validators";
 import { parseProfile } from "@/lib/profile";
+import { cleanReferral, referralError } from "@/lib/validate-shared";
 
 export const GET = handle(async () => {
   const me = await requireUser(["admin", "SM"]);
@@ -88,15 +89,18 @@ export const POST = handle(async (req) => {
     const sm: any = smId ? await User.findOne({ _id: smId, role: "SM" }).lean() : null;
     if (!sm) throw new ApiError(400, "Select the Sales Manager this SE will be under");
     if (!sm.active) throw new ApiError(400, "This Sales Manager is deactivated");
-    const seCode = pad(await nextSeq("se"), 6);
+    const referral = cleanReferral(String(body.referralCode ?? ""));
+    if (!referral) throw new ApiError(400, "Referral code is required");
+    const refErr = referralError(referral);
+    if (refErr) throw new ApiError(400, refErr);
+    if (await User.exists({ userId: referral })) throw new ApiError(409, "This referral code is already used");
     doc = await User.create({
-      userId: `SE-${sm.smCode}-${seCode}`,
+      userId: referral,
       role: "SE",
       name,
       email,
       ...profile,
       smCode: sm.smCode,
-      seCode,
       sm: sm._id,
       passwordHash: await hashPassword(password),
       createdBy: me._id,

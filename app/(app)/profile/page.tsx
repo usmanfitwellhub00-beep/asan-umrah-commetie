@@ -51,7 +51,7 @@ export default function ProfilePage() {
   if (!p) return <Loading />;
 
   const rows: [string, string][] = [
-    ["User ID", p.userId],
+    [p.role === "SE" ? "Referral Code" : "User ID", p.userId],
     ["Email", p.email],
     ["Mobile number", p.phone],
     ["WhatsApp", p.whatsapp],

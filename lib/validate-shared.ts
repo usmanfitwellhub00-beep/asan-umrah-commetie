@@ -37,3 +37,13 @@ export function emailError(raw: string) {
 }
 
 export const isEmailValid = (v: string) => !!v.trim() && !emailError(v);
+
+/** Referral code used as a Sales Executive's ID, e.g. UMDCA4BD-3 */
+export const cleanReferral = (v: string) => v.toUpperCase().replace(/[^A-Z0-9-]/g, "");
+export function referralError(v: string): string {
+  const c = cleanReferral(v);
+  if (!c) return "";
+  if (c.length < 4 || c.length > 20) return "Referral code must be 4–20 characters";
+  if (!/[A-Z]/.test(c)) return "Referral code must contain at least one letter";
+  return "";
+}
